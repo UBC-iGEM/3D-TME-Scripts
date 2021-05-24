@@ -1,0 +1,5 @@
+.DS_Store
+*.swp
+*.h5
+hdfslices/frames
+venv
