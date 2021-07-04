@@ -1,5 +1,6 @@
 .DS_Store
 *.swp
 *.h5
+*.vtk
 hdfslices/frames
 venv
