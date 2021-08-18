@@ -2,6 +2,7 @@ import h5py
 import sys
 import numpy as np
 import skfuzzy
+from sklearn.preprocessing import RobustScaler
 
 # using this paper as reference: https://www.nature.com/articles/cgt201110
 
@@ -42,21 +43,26 @@ def main():
     with h5py.File(sys.argv[1], 'r') as tumor_h5:
         num_cells = int(tumor_h5['out0540/vbl'].attrs['ncells'])
         num_variables = len(variables)
-        X = np.empty((num_cells, num_variables))
+        X = np.empty((num_cells, num_variables+1))
 
         # load the data into an np array
         for i,v in enumerate(variables):
             assert tumor_h5['out0540'][v].shape == (num_cells, 1)
             X[:, i] = np.reshape(tumor_h5['out0540'][v], (num_cells,))
+        
+        # include distance from centre as one of the clustering parameters
+        X[:, num_variables] = np.linalg.norm(tumor_h5['out0540/cells/cell_center_pos'], axis=1)
 
-        cntr, u, u0, d, jm, p, fpc = skfuzzy.cluster.cmeans(X.T, 2, 2, 
+        X = RobustScaler().fit_transform(X)
+
+        cntr, u, u0, d, jm, p, fpc = skfuzzy.cluster.cmeans(X.T, 4, 2, 
                                                             error=0.005,
                                                             maxiter=1000,
                                                             init=None)
         scores = u.T
         regions = np.argmax(scores, axis=1)
 
-        # hunt for the transition zone
+#        # hunt for the transition zone
 #        threshold = 0.2
 #        for i,(a,b) in enumerate(scores):
 #            if abs(a-b) < threshold:
