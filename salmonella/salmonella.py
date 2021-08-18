@@ -1,7 +1,7 @@
 import h5py
 import sys
 import numpy as np
-import skfuzzy
+from sklearn.cluster import KMeans
 from sklearn.preprocessing import RobustScaler
 
 # using this paper as reference: https://www.nature.com/articles/cgt201110
@@ -54,13 +54,7 @@ def main():
         X[:, num_variables] = np.linalg.norm(tumor_h5['out0540/cells/cell_center_pos'], axis=1)
 
         X = RobustScaler().fit_transform(X)
-
-        cntr, u, u0, d, jm, p, fpc = skfuzzy.cluster.cmeans(X.T, 4, 2, 
-                                                            error=0.005,
-                                                            maxiter=1000,
-                                                            init=None)
-        scores = u.T
-        regions = np.argmax(scores, axis=1)
+        regions = KMeans(n_clusters=4).fit_predict(X)
 
         with h5py.File("tumor-regions.h5", 'w') as new_h5:
             for a in tumor_h5.attrs:
