@@ -1,5 +1,6 @@
 .DS_Store
 *.swp
+*.swo
 *.h5
 *.vtk
 hdfslices/frames
