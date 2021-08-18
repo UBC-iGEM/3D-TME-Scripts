@@ -4,8 +4,6 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import RobustScaler
 
-
-
 variables = [
     'cells/cell_phase',
     'cells/cell_phase_age',

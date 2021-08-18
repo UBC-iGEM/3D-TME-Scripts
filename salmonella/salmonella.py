@@ -30,7 +30,7 @@ from sklearn.preprocessing import RobustScaler
 
 variables = [
     'cells/concAcL_ex',
-    'cells/pH_ex',
+    'cells/glucose_ex',
 ]
 
 
