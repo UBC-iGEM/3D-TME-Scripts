@@ -3,6 +3,8 @@ import sys
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import RobustScaler
+import skfuzzy
+import math
 
 # using this paper as reference: https://www.nature.com/articles/cgt201110
 
@@ -27,17 +29,11 @@ from sklearn.preprocessing import RobustScaler
 
 # We'll define 2 distinct regions 
 
-
 variables = [
     'cells/concAcL_ex',
     'cells/glucose_ex',
 ]
 
-
-EDGE_SIZE = 0.05
-
-# let's do k means with 2 regions.
-# we'll define the transition zone as all cells that are close to both
 
 def main():
     with h5py.File(sys.argv[1], 'r') as tumor_h5:
@@ -54,7 +50,47 @@ def main():
         X[:, num_variables] = np.linalg.norm(tumor_h5['out0540/cells/cell_center_pos'], axis=1)
 
         X = RobustScaler().fit_transform(X)
-        regions = KMeans(n_clusters=4).fit_predict(X)
+
+        cntr, u, u0, d, jm, p, fpc = skfuzzy.cluster.cmeans(X.T, 2, 2, 
+                                                             error=0.005,
+                                                             maxiter=1000,
+                                                             init=None)
+        scores = u.T
+        regions = np.argmax(scores, axis=1)
+
+        # Transition
+        threshold = 0.1
+        for i,(a,b) in enumerate(scores):
+            if abs(a-b) < threshold:
+                regions[i] = 2
+
+        l_regions = np.loadtxt('regions.txt', dtype=int)
+        regions[np.argwhere(l_regions == 3)] = 3
+
+        # Edge
+#        # Create array of all cells (their positions) that are on the outside surface (isonAS)
+#        edge_indices = np.nonzero(np.reshape(tumor_h5['out0540/vbl/isonAS'], (num_cells,)))[0]
+#        edge_pos = tumor_h5['out0540']['cells']['cell_center_pos'][edge_indices]
+#
+#        cell_pos = tumor_h5['out0540/cells/cell_center_pos']
+#
+#        def closest_node_idx(node, nodes):
+#            nodes = np.asarray(nodes)
+#            deltas = nodes - node
+#            dist_2 = np.einsum('ij,ij->i', deltas, deltas)
+#            return np.argmin(dist_2)
+#
+#        count = 0
+#        threshold = 20
+#        for i,cp in enumerate(cell_pos):
+#            closest = edge_pos[closest_node_idx(cp, edge_pos)]
+#            distance = np.linalg.norm(cp-closest)
+#            if distance < threshold:
+#                count += 1
+#                regions[i] = 3
+#
+#        print(count / num_cells)
+#        np.savetxt('regions.txt', regions, fmt='%d')
 
         with h5py.File("tumor-regions.h5", 'w') as new_h5:
             for a in tumor_h5.attrs:

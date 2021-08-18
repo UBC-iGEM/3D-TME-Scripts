@@ -4,6 +4,8 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import RobustScaler
 
+# The purpose of this script is to try 
+
 variables = [
     'cells/cell_phase',
     'cells/cell_phase_age',
@@ -13,7 +15,6 @@ variables = [
     'cells/cell_o2_consumption_rate',
     'cells/cell_radii',
     'cells/distance_to_nearest_vessel',
-    'vbl/isonAS',
     'vbl/age',
     'vbl/age_mother',
     'vbl/volume_extra'
