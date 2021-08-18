@@ -4,7 +4,8 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import RobustScaler
 
-# The purpose of this script is to try 
+# The purpose of this script is to try to determine which variables are the most
+# predictive of locarion within the tumor
 
 variables = [
     'cells/cell_phase',
