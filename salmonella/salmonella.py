@@ -62,13 +62,7 @@ def main():
         scores = u.T
         regions = np.argmax(scores, axis=1)
 
-#        # hunt for the transition zone
-#        threshold = 0.2
-#        for i,(a,b) in enumerate(scores):
-#            if abs(a-b) < threshold:
-#                regions[i] = 2
-
-        with h5py.File("tumor-classes-2.h5", 'w') as new_h5:
+        with h5py.File("tumor-regions.h5", 'w') as new_h5:
             for a in tumor_h5.attrs:
                 new_h5.attrs[a] = tumor_h5.attrs[a]
             new_h5.copy(tumor_h5['out0540'], new_h5)
