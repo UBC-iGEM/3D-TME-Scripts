@@ -6,3 +6,4 @@
 hdfslices/frames
 venv
 *.txt
+__pycache__

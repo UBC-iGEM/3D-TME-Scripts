@@ -1,3 +1,4 @@
+import os
 import h5py
 import sys
 import numpy as np
@@ -57,33 +58,37 @@ def main():
             if abs(a-b) < threshold:
                 regions[i] = 2
 
+        # Edge
+        # Create array of all cells (their positions) that are on the outside surface (isonAS)
+        if not os.path.exists('regions.txt'):
+            edge_indices = np.nonzero(np.reshape(tumor_h5['out0540/vbl/isonAS'], (num_cells,)))[0]
+            edge_pos = tumor_h5['out0540']['cells']['cell_center_pos'][edge_indices]
+
+            cell_pos = tumor_h5['out0540/cells/cell_center_pos']
+
+            def closest_node_idx(node, nodes):
+                nodes = np.asarray(nodes)
+                deltas = nodes - node
+                dist_2 = np.einsum('ij,ij->i', deltas, deltas)
+                return np.argmin(dist_2)
+
+            count = 0
+            threshold = 1
+            for i,cp in enumerate(cell_pos):
+                closest = edge_pos[closest_node_idx(cp, edge_pos)]
+                distance = np.linalg.norm(cp-closest)
+                if distance < threshold:
+                    count += 1
+                    regions[i] = 3
+
+            print(count / num_cells)
+            np.savetxt('regions.txt', regions, fmt='%d')
+
         l_regions = np.loadtxt('regions.txt', dtype=int)
         regions[np.argwhere(l_regions == 3)] = 3
 
-        # Edge
-#        # Create array of all cells (their positions) that are on the outside surface (isonAS)
-#        edge_indices = np.nonzero(np.reshape(tumor_h5['out0540/vbl/isonAS'], (num_cells,)))[0]
-#        edge_pos = tumor_h5['out0540']['cells']['cell_center_pos'][edge_indices]
-#
-#        cell_pos = tumor_h5['out0540/cells/cell_center_pos']
-#
-#        def closest_node_idx(node, nodes):
-#            nodes = np.asarray(nodes)
-#            deltas = nodes - node
-#            dist_2 = np.einsum('ij,ij->i', deltas, deltas)
-#            return np.argmin(dist_2)
-#
-#        count = 0
-#        threshold = 20
-#        for i,cp in enumerate(cell_pos):
-#            closest = edge_pos[closest_node_idx(cp, edge_pos)]
-#            distance = np.linalg.norm(cp-closest)
-#            if distance < threshold:
-#                count += 1
-#                regions[i] = 3
-#
-#        print(count / num_cells)
-#        np.savetxt('regions.txt', regions, fmt='%d')
+
+
 
         with h5py.File("tumor-regions.h5", 'w') as new_h5:
             for a in tumor_h5.attrs:

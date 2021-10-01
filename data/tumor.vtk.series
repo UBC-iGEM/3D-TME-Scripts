@@ -1,0 +1,9 @@
+{
+  "file-series-version" : "1.0",
+  "files" : [
+    { "name" : "tumor-0.vtk",  "time" : 0},
+    { "name" : "tumor-12.vtk", "time" : 12},
+    { "name" : "tumor-48.vtk", "time" : 48},
+    { "name" : "tumor-96.vtk", "time" : 96},
+  ]
+}
